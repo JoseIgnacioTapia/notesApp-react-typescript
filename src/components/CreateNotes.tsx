@@ -1,18 +1,46 @@
-import * as React from 'react';
-import { useRef } from 'react';
-import { Button, Form } from 'react-bootstrap';
+import React, { useRef, useState } from 'react';
+import { Alert, Button, Form } from 'react-bootstrap';
+import { Note } from '../models/note.model';
 
-interface ICreateNotesProps {}
+interface ICreateNotesProps {
+  notes: Note[];
+  setNotes: React.Dispatch<React.SetStateAction<Note[]>>;
+}
 
-const CreateNotes: React.FC<ICreateNotesProps> = props => {
+const CreateNotes: React.FC<ICreateNotesProps> = ({ notes, setNotes }) => {
+  const [error, setError] = useState<string>('');
   const titleRef = useRef<HTMLInputElement | null>(null);
   const textRef = useRef<HTMLTextAreaElement | null>(null);
   const colorRef = useRef<HTMLInputElement | null>(null);
 
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>): void => {
+    e.preventDefault();
+
+    if (titleRef.current?.value === '' || textRef.current?.value === '') {
+      return setError('All fields are mandatory');
+    }
+
+    setError('');
+    setNotes([
+      ...notes,
+      {
+        id: new Date().toString(),
+        title: (titleRef.current as HTMLInputElement).value,
+        text: (textRef.current as HTMLTextAreaElement).value,
+        color: (colorRef.current as HTMLInputElement).value,
+        date: new Date().toString(),
+      },
+    ]);
+
+    (titleRef.current as HTMLInputElement).value = '';
+    (textRef.current as HTMLTextAreaElement).value = '';
+  };
+
   return (
     <>
       <h2>Create Notes</h2>
-      <Form className="mt-3 mb-3">
+      {error && <Alert variant="danger">{error}</Alert>}
+      <Form className="mt-3 mb-3" onSubmit={e => handleSubmit(e)}>
         <Form.Group className="mb-3" controlId="formBasicTitle">
           <Form.Label>Title</Form.Label>
           <Form.Control
